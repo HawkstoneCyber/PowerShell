@@ -8,3 +8,4 @@ I've been creating these fit for purpose scripts built on PowerShell 7 over the 
 | [PS-CVESearch.ps1](https://github.com/HawkstoneCyber/PowerShell/tree/main/scripts/PS-CVESearch.ps1) | MITRE CVE search by keyword  |
 | [Get-OutlookEmailHeaderBrief.ps1](https://github.com/HawkstoneCyber/PowerShell/tree/main/scripts/Get-OutlookEmailHeaderBrief.ps1) | Outlook Email Header Extraction (Brief)  |
 | [Invoke-vmUp.ps1](https://github.com/HawkstoneCyber/PowerShell/tree/main/scripts/Invoke-vmUp.ps1) | Create and Delete test virtual machines |
+| [Get-WinLog.ps1](https://github.com/HawkstoneCyber/PowerShell/tree/main/scripts/Get-WinLog.ps1) | Query every log possible for a term |
