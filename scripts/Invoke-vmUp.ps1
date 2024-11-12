@@ -19,8 +19,8 @@
     Company: Hawkstone Cyber
     Date: 20240425
     Contact: info@hawkstonecyber.com
-    Last Modified: 20241105
-    Version: 1.0
+    Last Modified: 20241112
+    Version: 1.1
 
 .LINK
 
