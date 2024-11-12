@@ -9,7 +9,7 @@
 
 .COMPONENT
 
-	  Requires Hyper-V on the host.
+    Requires Hyper-V on the host.
 
     Requires privileged account to execute.
 
