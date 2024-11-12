@@ -150,9 +150,15 @@ Function vmUp {
         New-VM -Name $vmname -Generation $gentype -NewVHDPath $vhdPath -NewVHDSizeBytes $vhdsize -SwitchName $selectedSwitch
         Set-VM -Name $vmname -ProcessorCount 2 -AutomaticStopAction TurnOff -AutomaticStartAction Nothing -AutomaticCheckpointsEnabled $false -CheckPointType Standard
         Set-VMProcessor $vmname -Count 2 -Reserve 0 -Maximum 100 -RelativeWeight 100
-        Set-VMMemory $vmname -DynamicMemoryEnabled $true -MinimumBytes 2048MB -StartupBytes 4096MB -MaximumBytes 8GB -Priority 80 -Buffer 20
-
-        # Attach the ISO file to the VM's DVD drive
+        Set-VMMemory $vmname -DynamicMemoryEnabled $true -MinimumBytes 4096MB -StartupBytes 4096MB -MaximumBytes 8GB -Priority 80 -Buffer 20
+	# Added enabling TPM for Windows installation. HGS help from https://deploywindows.com/2015/11/13/add-virtual-tpm-in-windows-10-hyper-v-guest-with-powershell/
+	$HGOwner = Get-HgsGuardian UntrustedGuardian
+	$newkp = New-HgsKeyProtector -Owner $HGOwner -AllowUntrustedRoot
+	Set-VMKeyProtector -VMName $vmname -KeyProtector $newkp.RawData
+	#
+	Enable-VMTPM -VMName $vmname
+        
+	# Attach the ISO file to the VM's DVD drive
         Add-VMDvdDrive -VMName $vmname -Path $isoPath
 
         if ($gentype -eq 1) {
