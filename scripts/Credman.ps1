@@ -49,7 +49,6 @@ while ($true) {
 		} finally {
 			[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
 			Start-Sleep -s 2
-			sho
         }
 		break
 		}
@@ -414,3 +413,6 @@ $upper = 65..90  # ASCII A-Z
     return $password
 }
 # Gen-pass
+
+# Example Usage
+# Run .\Credman.ps1
