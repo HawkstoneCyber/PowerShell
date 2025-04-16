@@ -62,7 +62,7 @@ FUNCTION cvesearch {
             # Parse the response content to extract hyperlinks
             $links = $response.Links | Where-Object { $_.href -match 'CVE-\d{4}-\d+' } | ForEach-Object {
                 # Construct plain text link
-                "https://cve.mitre.org$($_.href)"
+                "$($_.href)"
             }
 
             # Add the extracted hyperlinks to the results array, prepending each with the keyword and a tab
