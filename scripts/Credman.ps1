@@ -197,7 +197,7 @@ FUNCTION copy-cred {
         $username | Set-Clipboard
         $Seconds = 10
         for ($i = $Seconds; $i -ge 0; $i--) {
-            Write-Progress -Activity "Clipboard username copy (countdown to self destruct)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
+            Write-Progress -Activity "Username copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
         }
 		[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
@@ -205,7 +205,7 @@ FUNCTION copy-cred {
         $securepassword | Set-Clipboard
         $Seconds = 10
         for ($i = $Seconds; $i -ge 0; $i--) {
-            Write-Progress -Activity "Clipboard password copy (countdown to self destruct)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
+            Write-Progress -Activity "Password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
         }
 		[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
