@@ -26,6 +26,7 @@
 
 #>
 
+# Main Menu
 FUNCTION credman {
 # Main loop
 while ($true) {
@@ -58,8 +59,8 @@ while ($true) {
     3 { test-cred }
     4 { del-cred }
     5 { show-pass }
-		6 { gen-pass }
-		7 { credwiz }
+    6 { gen-pass }
+    7 { credwiz }
 		
     default {
         Write-Host "Invalid selection, please try again."
@@ -75,6 +76,7 @@ while ($true) {
 }
 }
 
+# Add New Crednetials
 FUNCTION add-cred {
     $targetName = Read-Host "Input New Target Name for Windows Credential Manager"
 	$userName = Read-Host "Input New User Name for Windows Credential Manager"
@@ -113,7 +115,7 @@ FUNCTION add-cred {
     Write-Host "New credential securely stored."
 }
 
-# Copy Credential
+# Copy Credentials
 FUNCTION copy-cred {
     [CmdletBinding()]
     param ()
@@ -198,7 +200,7 @@ FUNCTION copy-cred {
     }
 }
 
-#Delete Specific Credentials
+# Delete Specific Credential
 FUNCTION del-cred {
     # Get stored credentials
     $creds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
@@ -254,7 +256,7 @@ FUNCTION del-cred {
     }
 }
 
-#Create Test Credntial
+# Create Test Credntial
 FUNCTION test-cred {
     [CmdletBinding()]
     param ()
@@ -308,7 +310,7 @@ FUNCTION test-cred {
     }
 }
 
-#Show current password for Windows Credential Manager object (Requires TUN.CredentialManager Module).
+# Show current password for Windows Credential Manager object.
 FUNCTION show-pass {
 
     [CmdletBinding()]
@@ -413,6 +415,8 @@ $upper = 65..90  # ASCII A-Z
     return $password
 }
 # Gen-pass
+
+credman
 
 # Example Usage
 # Run .\Credman.ps1
