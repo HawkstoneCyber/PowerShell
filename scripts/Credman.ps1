@@ -33,15 +33,16 @@ while ($true) {
 	cls
 	Write-Host "Credential Manager" -f cyan
 	Write-Host "----------------------------------------------------------------------" -f white
-	Write-Host "1 Add Credential" -f cyan
-	Write-Host "2 Copy Credential" -f cyan
-	Write-Host "3 Create Temp Test Credential" -f cyan
-	Write-Host "4 Delete Credential" -f cyan
-	Write-Host "5 Show Credential Password" -f cyan
-	Write-Host "6 Create Strong Password" -f cyan
-	Write-Host "7 Backup / Restore Credential dB" -f cyan
+	Write-Host "1 Show Credentials" -f cyan
+	Write-Host "2 Add Credential" -f cyan
+	Write-Host "3 Copy Credential" -f cyan
+	Write-Host "4 Create Temp Test Credential" -f cyan
+	Write-Host "5 Delete Credential" -f cyan
+	Write-Host "6 Show Credential Password" -f cyan
+	Write-Host "7 Create Strong Password" -f cyan
+	Write-Host "8 Backup / Restore Credential dB" -f cyan
 	Write-Host " " -f black
-    $choice = Read-Host "Please enter your choice (1-7) or enter to exit"
+    $choice = Read-Host "Please enter your choice (1-8) or enter to exit"
 
     switch ($choice) {
         "" { try {
@@ -51,16 +52,17 @@ while ($true) {
 			[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
 			Start-Sleep -s 2
         }
-		break
-		}
+	break
+	}
 		
-		1 { add-cred }
-    2 { copy-cred }
-    3 { test-cred }
-    4 { del-cred }
-    5 { show-pass }
-    6 { gen-pass }
-    7 { credwiz }
+	1 { show-creds }
+	2 { add-cred }
+        3 { copy-cred }
+        4 { test-cred }
+        5 { del-cred }
+        6 { show-pass }
+	7 { gen-pass }
+	8 { credwiz }
 		
     default {
         Write-Host "Invalid selection, please try again."
@@ -74,6 +76,25 @@ while ($true) {
     # Pause before showing the menu again
     Read-Host "Press Enter to continue..."
 }
+}
+
+#Show all credentials
+FUNCTION show-creds {
+    $allCreds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
+    if ($allCreds -eq $null) {
+        Write-Host "No stored credentials."
+    } else {
+        Write-Host "Stored credentials" -f cyan
+        Write-Host "" -f Black
+        $sortedCreds = $allCreds | Sort-Object -Property TargetName
+        $sortedCreds | ForEach-Object {
+            if ($_.TargetName -match "target=(.+)") {
+                Write-Host $matches[1]
+            } else {
+                Write-Host $_.TargetName
+            }
+        }
+    }
 }
 
 # Add New Crednetials
@@ -200,63 +221,70 @@ FUNCTION copy-cred {
     }
 }
 
-# Delete Specific Credential
+#Delete Specific Credentials
 FUNCTION del-cred {
-    # Get stored credentials
-    $creds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
+    [CmdletBinding()]
+    param ()
 
-    # Check if there are any stored credentials
-    if ($creds -eq $null) {
-        Write-Host "No stored credentials found."
+    $searchString = Read-Host "Enter a part of the target name to search for, or press Enter to view all credentials"
+
+    $credentials = Get-StoredCredential -AsCredentialObject
+
+    if ($null -eq $credentials -or $credentials.Count -eq 0) {
+        Write-Host "No credentials found." -f Red
         return
     }
 
-    # Display the stored credentials as a numbered list
-    $i = 1
-    foreach ($cred in $creds) {
-        Write-Host "$i. $($cred.TargetName)"
+    # Sort credentials alphabetically by TargetName
+    $credentials = $credentials | Sort-Object TargetName
+
+    # Filter credentials based on search string
+    if (-not [string]::IsNullOrEmpty($searchString)) {
+        $credentials = $credentials | Where-Object { $_.TargetName -like "*$searchString*" }
+    }
+
+    # Display filtered and sorted credentials with numbering
+    $credentials | ForEach-Object -Begin { $i = 1 } -Process {
+        $displayTargetName = $_.TargetName -replace "^.*=", ""
+        Write-Host "$i. $displayTargetName" -f Cyan
         $i++
     }
 
-    # Prompt the user to select the number of the credential to delete
-    Write-Host "" -f Black
-	$selection = Read-Host "Enter the number of the credential to delete"
-
-    # Validate the user's input
-    if ([string]::IsNullOrWhiteSpace($selection) -or -not $selection -match '^\d+$' -or [int]$selection -lt 1 -or [int]$selection -gt $creds.Count) {
-        Write-Host "Invalid selection. Cancelling the function."
+    if ($credentials.Count -eq 0) {
+        Write-Host "No matching credentials found." -f Red
         return
     }
 
-    # Convert the selection to an integer
-    $selection = [int]$selection
+    $selection = Read-Host "Select the number of the credential to delete (or press Enter to exit)"
 
-    # Get the selected credential
-    $credToDelete = $creds[$selection - 1]
-    $targetNameString = $credToDelete.TargetName.ToString()
-
-    # Remove the selected credential
-    Remove-StoredCredential -Target $targetNameString
-
-    # Display remaining credentials
-	Write-Host "" -f Black
-    $remainingCreds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
-    if ($remainingCreds -eq $null) {
-        Write-Host "No remaining stored credentials."
-    } else {
-        Write-Host "Remaining stored credentials" -f cyan
-		Write-Host "" -f Black
-		$remainingCreds | ForEach-Object {
-                    if ($targetValue -match "target=(.+)") {
-                        Write-Host $matches[1]
-                    } else {
-                        Write-Host $_.TargetName
-                    }
-                }
+    if ([string]::IsNullOrEmpty($selection)) {
+        Write-Host "Exiting..."
+        return
     }
+
+    if ($selection -match '^\d+$') {
+        $selection = [int]$selection
+
+        if ($selection -gt 0 -and $selection -le $credentials.Count) {
+            $selectedCredential = $credentials[$selection - 1]
+        } else {
+            Write-Host "Selection is out of range. Please select a valid number." -f Red
+            return
+        }
+    } else {
+        Write-Host "Invalid input. Please enter a number." -f Red
+        return
+    }
+
+    $selection = $selectedCredential.TargetName
+	
+    # Remove the selected credential
+    Remove-StoredCredential -Target $selection
+	
+	Write-Host "$selection deleted." -f Red
 }
 
-# Create Test Credntial
+# Create Test Credential
 FUNCTION test-cred {
     [CmdletBinding()]
     param ()
