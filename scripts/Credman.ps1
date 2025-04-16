@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
 
-    Windows organic credential management using PowerShell.
+    Windows organic credential management (Generic Credentials) using PowerShell.
 
 .DESCRIPTION
 
-    Manage Windows credentials using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
+    Manage Windows credentials (Generic Credentials) using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
 
 .COMPONENT
 
