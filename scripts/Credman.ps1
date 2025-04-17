@@ -78,7 +78,7 @@ while ($true) {
 }
 }
 
-#Show all credentials
+#Show All Credentials
 FUNCTION show-creds {
     $allCreds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
     if ($allCreds -eq $null) {
@@ -97,7 +97,7 @@ FUNCTION show-creds {
     }
 }
 
-# Add New Crednetials
+# Add New Credentials
 FUNCTION add-cred {
     $targetName = Read-Host "Input New Target Name for Windows Credential Manager"
 	$userName = Read-Host "Input New User Name for Windows Credential Manager"
