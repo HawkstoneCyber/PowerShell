@@ -137,60 +137,56 @@ FUNCTION add-cred {
 }
 
 # Copy Credentials
+# The clipboard history erase only works with Windows 10 / PowerShell 5 combination. All others require manual history erasing unless history is disabled.)
 FUNCTION copy-cred {
     [CmdletBinding()]
     param ()
 
-    $searchString = Read-Host "Enter a part of the target name to search for, or press Enter to view all credentials"
+    Add-Type -AssemblyName System.Windows.Forms
 
+    $searchString = Read-Host "Enter a part of the target name to search for, or press Enter to view all credentials"
     $credentials = Get-StoredCredential -AsCredentialObject
 
-    if ($null -eq $credentials -or $credentials.Count -eq 0) {
-        Write-Host "No credentials found." -f Red
+    if (-not $credentials) {
+        Write-Host "No credentials found." -ForegroundColor Red
         return
     }
 
-    # Sort credentials alphabetically by TargetName
     $credentials = $credentials | Sort-Object TargetName
 
-    # Filter credentials based on search string
     if (-not [string]::IsNullOrEmpty($searchString)) {
         $credentials = $credentials | Where-Object { $_.TargetName -like "*$searchString*" }
     }
 
-    # Display filtered and sorted credentials with numbering
     $credentials | ForEach-Object -Begin { $i = 1 } -Process {
         $displayTargetName = $_.TargetName -replace "^.*=", ""
-        Write-Host "$i. $displayTargetName" -f Cyan
+        Write-Host "$i. $displayTargetName" -ForegroundColor Cyan
         $i++
     }
 
     if ($credentials.Count -eq 0) {
-        Write-Host "No matching credentials found." -f Red
+        Write-Host "No matching credentials found." -ForegroundColor Red
         return
     }
 
     $selection = Read-Host "Select the number of the credential to copy the username (or press Enter to exit)"
-
     if ([string]::IsNullOrEmpty($selection)) {
         Write-Host "Exiting..."
         return
     }
 
-    if ($selection -match '^\d+$') {
-        $selection = [int]$selection
-
-        if ($selection -gt 0 -and $selection -le $credentials.Count) {
-            $selectedCredential = $credentials[$selection - 1]
-        } else {
-            Write-Host "Selection is out of range. Please select a valid number." -f Red
-            return
-        }
-    } else {
-        Write-Host "Invalid input. Please enter a number." -f Red
+    if ($selection -notmatch '^\d+$') {
+        Write-Host "Invalid input. Please enter a number." -ForegroundColor Red
         return
     }
 
+    $selection = [int]$selection
+    if ($selection -lt 1 -or $selection -gt $credentials.Count) {
+        Write-Host "Selection is out of range. Please select a valid number." -ForegroundColor Red
+        return
+    }
+
+    $selectedCredential = $credentials[$selection - 1]
     $username = $selectedCredential.UserName
 
     if ($username -is [string]) {
@@ -200,7 +196,7 @@ FUNCTION copy-cred {
             Write-Progress -Activity "Username copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
         }
-		[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
+
         $securepassword = $selectedCredential.Password
         $securepassword | Set-Clipboard
         $Seconds = 10
@@ -208,16 +204,30 @@ FUNCTION copy-cred {
             Write-Progress -Activity "Password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
         }
-		[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
-        Write-Host "" -f Black
-        Write-Host "" -f Black
-        Write-Host "" -f Black
-        Write-Host "Clipboard " -f Yellow -NoNewline
-        Write-Host "erased! " -f Green
-        Write-Host "" -f Black
-        Write-Host "" -f Black
+
+        # Detect Windows version
+        $winVer = [System.Environment]::OSVersion.Version
+        $isWin11 = $winVer.Major -eq 10 -and $winVer.Build -ge 22000
+        $isWin10 = $winVer.Major -eq 10 -and $winVer.Build -lt 22000
+        $isPowerShell5 = $PSVersionTable.PSVersion.Major -eq 5
+
+        if ($isWin10 -and $isPowerShell5) {
+            try {
+                [Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
+                Write-Host "`nClipboard history erased!" -ForegroundColor Green
+            } catch {
+                Write-Host "`nClipboard history clear failed." -ForegroundColor Red
+            }
+        } elseif ($isWin11) {
+            Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
+            Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
+            Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
+        } else {
+            [System.Windows.Forms.Clipboard]::Clear()
+            Write-Host "`nClipboard content cleared!" -ForegroundColor Green
+        }
     } else {
-        Write-Host "Failed to retrieve the username from the selected credential." -f Red
+        Write-Host "Failed to retrieve the username from the selected credential." -ForegroundColor Red
     }
 }
 
