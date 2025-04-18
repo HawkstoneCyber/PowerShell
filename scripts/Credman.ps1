@@ -219,7 +219,16 @@ FUNCTION copy-cred {
                 Write-Host "`nClipboard history clear failed." -ForegroundColor Red
             }
         } elseif ($isWin11) {
-            Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
+            FUNCTION cclip {
+		$iteration = Read-Host "Input iterations"
+        	$null > Set-Clipboard
+    		for ($i = 1; $i -le [int]$iteration; $i++) {
+        	Set-Clipboard -Value "$i"
+        	Start-Sleep -Milliseconds 300  # Delay to allow clipboard history to register
+    			}
+		}
+  		cclip
+	    Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
             Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
             Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
         } else {
