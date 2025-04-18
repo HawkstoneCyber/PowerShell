@@ -303,7 +303,7 @@ FUNCTION copy-cred {
 		$iteration = Read-Host "Input iterations"
         	$null > Set-Clipboard
     		for ($i = 1; $i -le [int]$iteration; $i++) {
-        	Set-Clipboard -Value "$i"
+        	Set-Clipboard -Value "History overwritten $i time(s)"
         	Start-Sleep -Milliseconds 300  # Delay to allow clipboard history to register
     			}
 		}
