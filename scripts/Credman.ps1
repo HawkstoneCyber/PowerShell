@@ -49,7 +49,7 @@ while ($true) {
             Write-Host "Exiting..."
 		} catch {
 		} finally {
-			[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
+			#[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null (windows 10 / PowerShell 5 only)
 			Start-Sleep -s 2
         }
 	break
