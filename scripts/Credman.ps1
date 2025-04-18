@@ -1,11 +1,10 @@
-<#
 .SYNOPSIS
 
     Windows organic credential management (Generic Credentials) using PowerShell.
 
 .DESCRIPTION
 
-    Manage Windows Credentials (Generic Credentials) using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
+    Manage Windows credentials (Generic Credentials) using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
 
 .COMPONENT
 
@@ -15,10 +14,10 @@
 
     Author: Shane Liptak
     Company: SNC
-    Date: 20250416
+    Date: 20250303
     Contact: shane@hawkstonecyber.com
     Last Modified: 20250418
-    Version: 1.3
+    Version: 1.4
 
 .LINK
 
@@ -26,6 +25,8 @@
 
 #>
 
+# Main Menu
+cls
 FUNCTION credman {
 FUNCTION logo {
     $width = [Console]::WindowWidth
@@ -154,9 +155,10 @@ logo
 # Main loop
 while ($true) {
 	cls
-	Write-Host "Credential Manager" -f cyan
-	Write-Host "----------------------------------------------------------------------" -f white
-	Write-Host "1 Show Credentials" -f cyan
+	Write-Host "========================" -f white
+	Write-Host "`n|| Credential Manager ||" -f cyan
+	Write-Host "`n========================" -f white
+	Write-Host "`n1 Show Credentials" -f cyan
 	Write-Host "2 Add Credential" -f cyan
 	Write-Host "3 Copy Credential" -f cyan
 	Write-Host "4 Create Temp Test Credential" -f cyan
@@ -248,21 +250,24 @@ FUNCTION add-cred {
     # Get the selected persistence value
     $persistence = $persistenceOptions[$selection - 1]
 
-    # Prompt the user to input the credential
-    $credentialPw = Get-Credential -UserName $userName -Message "Enter username and password/key"
+    # Prompt the user to for password generation options
+    $pwdoption = Read-Host "Select Y to generate a strong password or ENTER to input your own"
+	if ($pwdoption -eq "Y") {
+	gen-pass2
+	Write-Host "`nPress CTRL-V to paste password into password field." -f yellow
+	}
+	$credentialPw = Get-Credential -UserName $userName -Message "Enter username and password/key"
 	$credentialPwPlaintext = $credentialPw.GetNetworkCredential().Password
 	New-StoredCredential -Target $targetName -Persist $persistence -UserName $userName -Password $credentialPwPlaintext
 
     # Verify if the credential was successfully stored
     Get-StoredCredential -Target $targetName
     Write-Host "New credential securely stored."
+	clear-Cb
 }
 
 # Copy Credential
-# The clipboard history erase only works with Windows 10 / PowerShell 5 combination. All others require manual history erasing unless history is disabled.)
 FUNCTION copy-cred {
-    [CmdletBinding()]
-    param ()
 
     Add-Type -AssemblyName System.Windows.Forms
 
@@ -327,36 +332,9 @@ FUNCTION copy-cred {
             Start-Sleep -Seconds 1
         }
 
-        # Detect Windows version
-        $winVer = [System.Environment]::OSVersion.Version
-        $isWin11 = $winVer.Major -eq 10 -and $winVer.Build -ge 22000
-        $isWin10 = $winVer.Major -eq 10 -and $winVer.Build -lt 22000
-        $isPowerShell5 = $PSVersionTable.PSVersion.Major -eq 5
-
-        if ($isWin10 -and $isPowerShell5) {
-            try {
-                [Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
-                Write-Host "`nClipboard history erased!" -ForegroundColor Green
-            } catch {
-                Write-Host "`nClipboard history clear failed." -ForegroundColor Red
-            }
-        } elseif ($isWin11) {
-            FUNCTION cclip {
-		$iteration = Read-Host "Input iterations"
-        	$null > Set-Clipboard
-    		for ($i = 1; $i -le [int]$iteration; $i++) {
-        	Set-Clipboard -Value "History overwritten $i time(s)"
-        	Start-Sleep -Milliseconds 300  # Delay to allow clipboard history to register
-    			}
-		}
-  		cclip
-	    Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
-            Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
-            Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
-        } else {
-            [System.Windows.Forms.Clipboard]::Clear()
-            Write-Host "`nClipboard content cleared!" -ForegroundColor Green
-        }
+	# Clear Clipboard using FUNCTION clear-Cb
+	clear-Cb
+	
     } else {
         Write-Host "Failed to retrieve the username from the selected credential." -ForegroundColor Red
     }
@@ -365,8 +343,6 @@ FUNCTION copy-cred {
 
 #Delete Specific Credentials
 FUNCTION del-cred {
-    [CmdletBinding()]
-    param ()
 
     $searchString = Read-Host "Enter a part of the target name to search for, or press Enter to view all credentials"
 
@@ -428,8 +404,6 @@ FUNCTION del-cred {
 
 #Create Test Credential
 FUNCTION test-cred {
-    [CmdletBinding()]
-    param ()
 
     # Generate a random 8-digit number
     $randomNumber = -join ((0..9) | Get-Random -Count 8)
@@ -441,42 +415,19 @@ FUNCTION test-cred {
     # Set the persistence to "Session"
     $persistence = "Session"
 
-    # Generate a random 12-character password
-    # Import System.Web assembly
-	Add-Type -AssemblyName System.Web
-	# Generate random password
-	# ALT method: $password = [System.Web.Security.Membership]::GeneratePassword(20,2) #first number is length, second is special characters
-	$length = 20
-    $upper = 65..90  # ASCII A-Z
-    $lower = 97..122 # ASCII a-z
-    $numbers = 48..57 # ASCII 0-9
-    $special = 33..47 + 58..64 + 91..96 + 123..126 # ASCII special characters
-	$upper = 65..90  # ASCII A-Z
-    $lower = 97..122 # ASCII a-z
-    $numbers = 48..57 # ASCII 0-9
-    $special = [char[]]'!@#$%^&*()' # Specified special characters
-    $charSet = @()
-    $charSet += $upper
-    $charSet += $lower
-    $charSet += $numbers
-    $charSet += $special
-    $passwordChars = @()
-    $passwordChars += [char]($upper | Get-Random)
-    $passwordChars += [char]($lower | Get-Random)
-    $passwordChars += [char]($numbers | Get-Random)
-    $passwordChars += ($special | Get-Random)
-    for ($i = $passwordChars.Count; $i -lt $length; $i++) {
-        $passwordChars += [char]($charSet | Get-Random)
-    }
-    # Shuffle the characters to ensure randomness
-    $password = -join ($passwordChars | Sort-Object {Get-Random})
+    # Generate a random 16-character password
+	gen-pass2
+	
+	# Copy password from clipboard created from FUNCTION gen-pass2
+	$password = Get-Clipboard
+		
     # Store the credential
     New-StoredCredential -Target $targetName -Persist $persistence -UserName $userName -Password $password
     # Verify if the credential was successfully stored
     if ((Get-StoredCredential -Target $targetName | Where-Object { $_.UserName -eq $userName })) {
         Write-Host "New credential securely stored."
-		Start-Sleep -s 5
-		cls
+		Start-Sleep -s 3
+		clear-Cb
     } else {
         Write-Host "New credential not found."
     }
@@ -484,9 +435,6 @@ FUNCTION test-cred {
 
 #Show current password for Windows Credential Manager object (Requires TUN.CredentialManager Module).
 FUNCTION show-pass {
-
-    [CmdletBinding()]
-    param ()
 
     $searchString = Read-Host "Enter a part of the target name to search for, or press Enter to view all credentials"
 
@@ -520,6 +468,7 @@ FUNCTION show-pass {
     $selection = Read-Host "Select the number of the credential to delete (or press Enter to exit)"
 
     if ([string]::IsNullOrEmpty($selection)) {
+		Write-Progress -Activity "show-pass" -Completed
         Write-Host "Exiting..."
         return
     }
@@ -552,7 +501,7 @@ Write-Host "$selectedCredential credential not found."
 }
 }
 
-# Generate Strong Password
+# Generate Strong Password to Clipboard for 7 Seconds
 FUNCTION gen-pass {
     $length = 16
     $upper = 65..90  # ASCII A-Z
@@ -587,8 +536,8 @@ FUNCTION gen-pass {
 	Write-Host "`n========================="
 	Write-Host "`n$password`n" -f cyan
 	Write-Host "========================="
-	Write-Host "Copying to clipboard in 3 seconds."
-	Start-Sleep -s 3
+	Write-Host "Copying to clipboard."
+	
 	# Copy temp password to clipboard
 	$password | Set-Clipboard
         $Seconds = 7
@@ -596,6 +545,48 @@ FUNCTION gen-pass {
             Write-Progress -Activity "Temp password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
 		}
+		clear-Cb
+		Write-Progress -Activity "gen-pass" -Completed
+}
+
+# Generate Strong Password to Clipboard for use in other FUNCTIONs
+FUNCTION gen-pass2 {
+    $length = 16
+    $upper = 65..90  # ASCII A-Z
+    $lower = 97..122 # ASCII a-z
+    $numbers = 48..57 # ASCII 0-9
+    $special = 33..47 + 58..64 + 91..96 + 123..126 # ASCII special characters
+
+	$upper = 65..90  # ASCII A-Z
+    $lower = 97..122 # ASCII a-z
+    $numbers = 48..57 # ASCII 0-9
+    $special = [char[]]'!@#$%^&*()' # Specified special characters
+
+    $charSet = @()
+    $charSet += $upper
+    $charSet += $lower
+    $charSet += $numbers
+    $charSet += $special
+
+    $passwordChars = @()
+    $passwordChars += [char]($upper | Get-Random)
+    $passwordChars += [char]($lower | Get-Random)
+    $passwordChars += [char]($numbers | Get-Random)
+    $passwordChars += ($special | Get-Random)
+
+    for ($i = $passwordChars.Count; $i -lt $length; $i++) {
+        $passwordChars += [char]($charSet | Get-Random)
+    }
+
+    # Shuffle the characters to ensure randomness
+    $password = -join ($passwordChars | Sort-Object {Get-Random})
+	# Copy temp password to clipboard
+	$password | Set-Clipboard
+}
+
+# Function to delete clipboard contents
+# The clipboard history erase only works with Windows 10 / PowerShell 5 combination. All others require history overwriting or manual history erasing unless history is disabled.
+FUNCTION Clear-Cb {
         # Detect Windows version
         $winVer = [System.Environment]::OSVersion.Version
         $isWin11 = $winVer.Major -eq 10 -and $winVer.Build -ge 22000
@@ -627,3 +618,8 @@ FUNCTION gen-pass {
             Write-Host "`nClipboard content cleared!" -ForegroundColor Green
         }
 }
+
+credman
+
+# Example Usage
+# Run .\Credman.ps1
