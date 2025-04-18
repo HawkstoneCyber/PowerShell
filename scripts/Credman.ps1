@@ -271,7 +271,7 @@ FUNCTION copy-cred {
 
     if ($username -is [string]) {
         $username | Set-Clipboard
-        $Seconds = 10
+        $Seconds = 7
         for ($i = $Seconds; $i -ge 0; $i--) {
             Write-Progress -Activity "Username copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
@@ -279,7 +279,7 @@ FUNCTION copy-cred {
 
         $securepassword = $selectedCredential.Password
         $securepassword | Set-Clipboard
-        $Seconds = 10
+        $Seconds = 7
         for ($i = $Seconds; $i -ge 0; $i--) {
             Write-Progress -Activity "Password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
             Start-Sleep -Seconds 1
