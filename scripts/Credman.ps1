@@ -318,6 +318,7 @@ FUNCTION copy-cred {
     } else {
         Write-Host "Failed to retrieve the username from the selected credential." -ForegroundColor Red
     }
+    Write-Progress -Activity "Credential copy completed." -Completed
 }
 
 #Delete Specific Credentials
