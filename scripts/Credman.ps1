@@ -516,7 +516,7 @@ FUNCTION gen-pass {
     $numbers = 48..57 # ASCII 0-9
     $special = 33..47 + 58..64 + 91..96 + 123..126 # ASCII special characters
 
-    $upper = 65..90  # ASCII A-Z
+	$upper = 65..90  # ASCII A-Z
     $lower = 97..122 # ASCII a-z
     $numbers = 48..57 # ASCII 0-9
     $special = [char[]]'!@#$%^&*()' # Specified special characters
@@ -539,47 +539,50 @@ FUNCTION gen-pass {
 
     # Shuffle the characters to ensure randomness
     $password = -join ($passwordChars | Sort-Object {Get-Random})
-
+    Write-Host "Your temp password is:"
+	Write-Host "`n========================="
+	Write-Host "`n$password`n" -f cyan
+	Write-Host "========================="
+	Write-Host "Copying to clipboard in 3 seconds."
+	Start-Sleep -s 3
 	# Copy temp password to clipboard
 	$password | Set-Clipboard
-	$Seconds = 7
-	for ($i = $Seconds; $i -ge 0; $i--) {
-	    Write-Progress -Activity "Temp password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
-	    Start-Sleep -Seconds 1
+        $Seconds = 7
+        for ($i = $Seconds; $i -ge 0; $i--) {
+            Write-Progress -Activity "Temp password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
+            Start-Sleep -Seconds 1
 		}
-	# Detect Windows version
-	$winVer = [System.Environment]::OSVersion.Version
-	$isWin11 = $winVer.Major -eq 10 -and $winVer.Build -ge 22000
-	$isWin10 = $winVer.Major -eq 10 -and $winVer.Build -lt 22000
-	$isPowerShell5 = $PSVersionTable.PSVersion.Major -eq 5
-	
-	if ($isWin10 -and $isPowerShell5) {
-	    try {
-		[Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
-		Write-Host "`nClipboard history erased!" -ForegroundColor Green
-	    } catch {
-		Write-Host "`nClipboard history clear failed." -ForegroundColor Red
-	    }
-	} elseif ($isWin11) {
-	    FUNCTION cclip {
-		$iteration = Read-Host "Input iterations"
-		$null > Set-Clipboard
-		for ($i = 1; $i -le [int]$iteration; $i++) {
-		Set-Clipboard -Value "History overwritten $i time(s)"
-		Start-Sleep -Milliseconds 300  # Delay to allow clipboard history to register
-			}
-		}
-		cclip
-	    Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
-	    Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
-	    Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
-	} else {
-	    [System.Windows.Forms.Clipboard]::Clear()
-	    Write-Host "`nClipboard content cleared!" -ForegroundColor Green
-	}
-}
+        # Detect Windows version
+        $winVer = [System.Environment]::OSVersion.Version
+        $isWin11 = $winVer.Major -eq 10 -and $winVer.Build -ge 22000
+        $isWin10 = $winVer.Major -eq 10 -and $winVer.Build -lt 22000
+        $isPowerShell5 = $PSVersionTable.PSVersion.Major -eq 5
 
-# Gen-pass
+        if ($isWin10 -and $isPowerShell5) {
+            try {
+                [Windows.ApplicationModel.DataTransfer.Clipboard, Windows, ContentType = WindowsRuntime]::ClearHistory() > $null
+                Write-Host "`nClipboard history erased!" -ForegroundColor Green
+            } catch {
+                Write-Host "`nClipboard history clear failed." -ForegroundColor Red
+            }
+        } elseif ($isWin11) {
+            FUNCTION cclip {
+		$iteration = Read-Host "Input iterations"
+        	$null > Set-Clipboard
+    		for ($i = 1; $i -le [int]$iteration; $i++) {
+        	Set-Clipboard -Value "History overwritten $i time(s)"
+        	Start-Sleep -Milliseconds 300  # Delay to allow clipboard history to register
+    			}
+		}
+  		cclip
+	    Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
+            Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
+            Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
+        } else {
+            [System.Windows.Forms.Clipboard]::Clear()
+            Write-Host "`nClipboard content cleared!" -ForegroundColor Green
+        }
+}
 
 credman
 
