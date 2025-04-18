@@ -5,7 +5,7 @@
 
 .DESCRIPTION
 
-    Manage Windows credentials (Generic Credentials) using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
+    Manage Windows Credentials (Generic Credentials) using PowerShell. Add, copy, create test credentials, show password, generate strong password, and backup / restore (using credwiz) credentials.
 
 .COMPONENT
 
@@ -15,7 +15,7 @@
 
     Author: Shane Liptak
     Company: SNC
-    Date: 20250303
+    Date: 20250416
     Contact: shane@hawkstonecyber.com
     Last Modified: 20250418
     Version: 1.3
@@ -26,9 +26,19 @@
 
 #>
 
-# Main Menu
 FUNCTION credman {
-	Write-Host ":::::::::::::::::::::::::::::::::::::::::::::::::::::::..:......................................:::::::::::::::::::::::.
+FUNCTION logo {
+    $width = [Console]::WindowWidth
+    $height = [Console]::WindowHeight
+	
+    if ($width -eq $null-or $height -eq $null) {
+        Write-Output "Unable to determine console dimensions. Exiting."
+        return
+    }
+    
+    # Define the ASCII logo pattern
+    $logo = @"
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::..:......................................:::::::::::::::::::::::.
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::............:-=+*##%%%##*+=-:..............::::.:::::::::::::::.
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::.......:=*%%#+==-----==+*%%*=:...........::::::::::::::::::::.
 :::::::::::::::::::::::::::::::::::::::::::::::::::::..........:*%%*=-:----------:::-+#%*-...........::::......::::::::.
@@ -106,11 +116,44 @@ FUNCTION credman {
               .  .......   ....     ........  ........      .... ....   ..  .  ........    ..     ..   .. .             
                                                                                                                         
 
-"
+"@
+
+    # Split the logo into lines
+    $logoLines = $logo -split "`n"
+
+    # Adjust each line to fit the console width
+    $adjustedLogo = $logoLines | ForEach-Object {
+        if ($_.Length -lt $width) {
+            # If the line is shorter than the console width, pad it with spaces
+            $_ + (" " * ($width - $_.Length))
+        } else {
+            # If the line is longer than the console width, truncate it
+            $_.Substring(0, $width)
+        }
+    }
+
+    # Adjust the number of lines to fit the console height
+    if ($adjustedLogo.Count -gt $height) {
+        $adjustedLogo = $adjustedLogo[0..($height - 1)]
+    } elseif ($adjustedLogo.Count -lt $height) {
+        # If the total lines are less than the console height, pad with empty lines
+        $additionalLines = @()
+        for ($i = 0; $i -lt ($height - $adjustedLogo.Count); $i++) {
+            $additionalLines += " " * $width
+        }
+        $adjustedLogo += $additionalLines
+    }
+
+    # Display the adjusted ASCII logo
+    $adjustedLogo | ForEach-Object { Write-Output $_ }
+}
+logo
+
 	Start-Sleep -s 3
+
 # Main loop
 while ($true) {
- 	cls
+	cls
 	Write-Host "Credential Manager" -f cyan
 	Write-Host "----------------------------------------------------------------------" -f white
 	Write-Host "1 Show Credentials" -f cyan
@@ -130,23 +173,23 @@ while ($true) {
 		} catch {
 		} finally {
 			Write-Progress -Activity "Credman" -Completed
-			Start-Sleep -s 2
+			sho
         }
-	break
-	}
+		break
+		}
 		
-	1 { show-creds }
-	2 { add-cred }
+		1 { show-creds }
+		2 { add-cred }
         3 { copy-cred }
         4 { test-cred }
         5 { del-cred }
         6 { show-pass }
-	7 { gen-pass }
-	8 { credwiz }
+		7 { gen-pass }
+		8 { credwiz }
 		
-    default {
-        Write-Host "Invalid selection, please try again."
-    }
+        default {
+            Write-Host "Invalid selection, please try again."
+        }
     }
 
     if ($choice -eq "") {
@@ -158,7 +201,7 @@ while ($true) {
 }
 }
 
-#Show All Credentials
+#Show all credentials
 FUNCTION show-creds {
     $allCreds = Get-StoredCredential -AsCredentialObject -ErrorAction SilentlyContinue
     if ($allCreds -eq $null) {
@@ -177,7 +220,6 @@ FUNCTION show-creds {
     }
 }
 
-# Add New Credentials
 FUNCTION add-cred {
     $targetName = Read-Host "Input New Target Name for Windows Credential Manager"
 	$userName = Read-Host "Input New User Name for Windows Credential Manager"
@@ -216,7 +258,7 @@ FUNCTION add-cred {
     Write-Host "New credential securely stored."
 }
 
-# Copy Credentials
+# Copy Credential
 # The clipboard history erase only works with Windows 10 / PowerShell 5 combination. All others require manual history erasing unless history is disabled.)
 FUNCTION copy-cred {
     [CmdletBinding()]
@@ -384,7 +426,7 @@ FUNCTION del-cred {
 	Write-Host "$selection deleted." -f Red
 }
 
-# Create Test Credential
+#Create Test Credential
 FUNCTION test-cred {
     [CmdletBinding()]
     param ()
@@ -433,12 +475,14 @@ FUNCTION test-cred {
     # Verify if the credential was successfully stored
     if ((Get-StoredCredential -Target $targetName | Where-Object { $_.UserName -eq $userName })) {
         Write-Host "New credential securely stored."
+		Start-Sleep -s 5
+		cls
     } else {
         Write-Host "New credential not found."
     }
 }
 
-# Show current password for Windows Credential Manager object.
+#Show current password for Windows Credential Manager object (Requires TUN.CredentialManager Module).
 FUNCTION show-pass {
 
     [CmdletBinding()]
@@ -583,8 +627,3 @@ FUNCTION gen-pass {
             Write-Host "`nClipboard content cleared!" -ForegroundColor Green
         }
 }
-
-credman
-
-# Example Usage
-# Run .\Credman.ps1
