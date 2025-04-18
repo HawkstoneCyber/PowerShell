@@ -544,7 +544,7 @@ FUNCTION gen-pass {
 	$password | Set-Clipboard
 	$Seconds = 7
 	for ($i = $Seconds; $i -ge 0; $i--) {
-	    Write-Progress -Activity "Password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
+	    Write-Progress -Activity "Temp password copied to clipboard (countdown to clipboard wipe)..." -Status "Time remaining: $i seconds" -PercentComplete (($Seconds - $i) / $Seconds * 100)
 	    Start-Sleep -Seconds 1
 		}
 	# Detect Windows version
