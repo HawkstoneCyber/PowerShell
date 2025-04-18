@@ -107,7 +107,7 @@ FUNCTION credman {
                                                                                                                         
 
 "
-	Start-Sleep -s 5
+	Start-Sleep -s 3
 # Main loop
 while ($true) {
  	cls
