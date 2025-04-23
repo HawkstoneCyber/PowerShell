@@ -1,3 +1,4 @@
+<#
 .SYNOPSIS
 
     Windows organic credential management (Generic Credentials) using PowerShell.
@@ -254,6 +255,7 @@ FUNCTION add-cred {
     $pwdoption = Read-Host "Select Y to generate a strong password or ENTER to input your own"
 	if ($pwdoption -eq "Y") {
 	gen-pass2
+ 	Start-Sleep -s 1
 	Write-Host "`nPress CTRL-V to paste password into password field." -f yellow
 	}
 	$credentialPw = Get-Credential -UserName $userName -Message "Enter username and password/key"
@@ -602,7 +604,7 @@ FUNCTION Clear-Cb {
             }
         } elseif ($isWin11) {
             FUNCTION cclip {
-		$iteration = Read-Host "Input iterations"
+		$iteration = 26
         	$null > Set-Clipboard
     		for ($i = 1; $i -le [int]$iteration; $i++) {
         	Set-Clipboard -Value "History overwritten $i time(s)"
@@ -610,8 +612,8 @@ FUNCTION Clear-Cb {
     			}
 		}
   		cclip
-	    Write-Host "`nWindows 11 detected. Clipboard content has been cleared." -ForegroundColor Yellow
-            Write-Host "Note: Clipboard *history* must be cleared manually via:" -ForegroundColor Yellow
+	    Write-Host "`nWindows 11 detected. Clipboard content has been overwritten $iteration times." -ForegroundColor Yellow
+            Write-Host "Note: Clipboard *history* may also be cleared manually via:" -ForegroundColor Yellow
             Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
         } else {
             [System.Windows.Forms.Clipboard]::Clear()
