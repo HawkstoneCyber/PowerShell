@@ -612,7 +612,7 @@ FUNCTION Clear-Cb {
     			}
 		}
   		cclip
-	    Write-Host "`nWindows 11 detected. Clipboard content has been overwritten $iteration times." -ForegroundColor Yellow
+	    Write-Host "`nWindows 11 detected. Clipboard content has been overwritten 26 times." -ForegroundColor Yellow
             Write-Host "Note: Clipboard *history* may also be cleared manually via:" -ForegroundColor Yellow
             Write-Host "Settings > System > Clipboard > Clear" -ForegroundColor Cyan
         } else {
