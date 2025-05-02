@@ -1,6 +1,6 @@
 #   PowerShell
 
-I've been creating these fit for purpose scripts built on PowerShell 7 over the last year. I'll be adding more as time permits.
+I've been creating these fit for purpose scripts built on PowerShell over the last few years.
 
 | **Script**  | **Function** |
 | :--- | :--- |
