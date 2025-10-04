@@ -11,7 +11,7 @@ function Import-MyVM {
     The directory path containing exported .vmcx files, where each filename is assumed to match the VMId.
 
 .EXAMPLE
-    Import-MyVM -vmcxDirectory "D:\VM\Exported\Virtual Machines"
+    Import-MyVM -vmcxDirectory "C:\Virtual Machines"
 
 .NOTES
     Author: Shane Liptak
@@ -99,4 +99,5 @@ function Import-MyVM {
         }
     }
 }
+
 Import-MyVM
