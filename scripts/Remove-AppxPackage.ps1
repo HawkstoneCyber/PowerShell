@@ -41,8 +41,7 @@ function Remove-AppxPackage {
 
 .LINK
 
-    https://github.com/HawkstoneCyber/PowerShell
-
+    https://github.com/HawkstoneCyber/PowerShell/blob/main/scripts/Remove-AppxPackage.ps1
 #>
 
     # ---------------------------
@@ -253,3 +252,4 @@ function Remove-AppxPackage {
     Write-Host "[*] Reboot recommended."
 }
 Remove-AppxPackage
+
