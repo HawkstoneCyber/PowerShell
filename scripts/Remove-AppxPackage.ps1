@@ -62,7 +62,7 @@ function Remove-AppxPackage {
     }
 
     function Start-AuditLog {
-        $path = "$env:ProgramData\Hawkstone"
+        $path = "$env:ProgramData\Logs"
         New-Item -ItemType Directory -Path $path -Force | Out-Null
         $file = "$path\AppxRemovalAudit_$(Get-Date -Format yyyyMMdd_HHmmss).json"
         return $file
@@ -252,4 +252,5 @@ function Remove-AppxPackage {
     Write-Host "[*] Reboot recommended."
 }
 Remove-AppxPackage
+
 
